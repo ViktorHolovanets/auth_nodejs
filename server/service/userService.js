@@ -33,19 +33,20 @@ const userService = {
         };
     },
     login: async (email, password) => {
-        const user = await User.findOne({where:{ email }});
+        const user = await User.findOne({ email:email });
+        console.log(user);
         if (!user) {
-            throw new Error('User 454545already registered');
+            throw new Error('User already registered');
         }
         const isPassEquals = await bcrypt.compare(password, user.password);
         if (!isPassEquals) {
             throw ApiError.BadRequest('User 4545454already registered');
         }
-        const tokens = tokenService.generateToken({ id: user.id });
-        await tokenService.saveToken(newUser.id, tokens.refreshToken);
+        const tokens = await tokenService.generateToken({ id: user.id });
+        await tokenService.saveToken(user.id, tokens.refreshToken);
 
         return {
-            user: newUser,
+            user,
             ...tokens
         };
     }

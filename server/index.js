@@ -3,7 +3,7 @@ import routes from "./route/index.js"
 import sequelize from "./config/database.js";
 const PORT = 5000;
 const app = express();
-sequelize.sync({ force: true })
+sequelize.sync()
 
   .then(async () => {
     console.log('Database & tables created!');   

@@ -33,6 +33,7 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
+        //return res.json({message:"login"});
         const { email, password } = req.body;
         
         const result = await userService.login(email,password);
@@ -42,7 +43,7 @@ export const login = async (req, res) => {
             maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
             httpOnly: true 
         });
-
+console.log(result)
         // Відповідь з accessToken та ID користувача
         res.json({ 
             token: result.accessToken,
