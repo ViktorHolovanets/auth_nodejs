@@ -1,7 +1,10 @@
 import jwt from 'jsonwebtoken'
 import TokenRefresh from "../models/db/TokenRefresh.js"
-const JWT_ACCESS_SECRET = 'fdhfghgjhjhjkjjkjf';
-const JWT_REFRESH_SECRET = 'fdhfdfgdfgfghghytthbnttjy,.i,kjjkjf';
+import dotenv from"dotenv"
+
+dotenv.config();
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 
 const tokenService = {
     generateToken: (payload) => {
@@ -13,12 +16,17 @@ const tokenService = {
         }
     },
     saveToken: async (userId, refreshToken) => {
-        const oldToken = await TokenRefresh.findOne({ user_id: userId })
+        const oldToken = await TokenRefresh.findOne({where:{ user_id: userId }})
         if (oldToken) {
             oldToken.refreshToken = refreshToken;
             return oldToken.save();
         }
-        const token = await TokenRefresh.create({user_id:userId, token:refreshToken})
+        const token = await TokenRefresh.create({ user_id: userId, token: refreshToken })
+        return token
+    },
+    removeToken: async (refreshToken) => {
+
+        const token = await TokenRefresh.destroy({where:{ token: refreshToken }})
         return token
     }
 }

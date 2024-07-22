@@ -1,54 +1,40 @@
 import User from "../models/db/User.js";
 import userService from "../service/userService.js"
 
-
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
     try {
         const { firstName, lastName, birthday, email, password } = req.body;
-
-       /* // Валідація вхідних даних (опційно)
-        if (!firstName || !lastName || !birthday || !email || !password) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }*/
-
-        // Виклик сервісу реєстрації
         const result = await userService.registerUser({ firstName, lastName, birthday, email, password });
-
-        // Встановлення кукі з refreshToken
-        res.cookie("refreshToken", result.refreshToken, { 
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
-            httpOnly: true 
-        });
-
-        // Відповідь з accessToken та ID користувача
-        res.json({ 
+        res.cookie("refreshToken", result.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+        res.json({
             token: result.accessToken,
-            user: result.user.id
+            user: result.user.id,
         });
     } catch (error) {
-        console.error('Error during registration:', error.message);
-        res.status(500).json({ message: error.message }); // Змінено на 500, якщо це помилка сервера
+        next(error);
     }
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
     try {
-        //return res.json({message:"login"});
         const { email, password } = req.body;
-        
-        const result = await userService.login(email,password);
-
-        // Встановлення кукі з refreshToken
-        res.cookie("refreshToken", result.refreshToken, { 
-            maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
-            httpOnly: true 
-        });
-console.log(result)
-        // Відповідь з accessToken та ID користувача
-        res.json({ 
+        const result = await userService.loginUser( email, password );
+        res.cookie("refreshToken", result.refreshToken, { maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true });
+        res.json({
             token: result.accessToken,
-            user: result.user.id
+            user: result.user.id,
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const logout = async (req, res, next) => {
+    try {
+        const { refreshToken } = req.cookies;
+        const token = await userService.logout(refreshToken);
+        res.clearCookie('refreshToken');
+        return res.json(token);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -59,6 +45,6 @@ export const getAll = async (req, res) => {
         const users = await User.findAll();
         res.json(users);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 }
