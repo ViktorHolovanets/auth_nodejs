@@ -4,14 +4,14 @@ import tokenService from './tokenService.js';
 
 const userService = {
     registerUser: async (userData) => {
-        const isUser = await User.findOne({where:{ email: userData.email }});
+        const isUser = await User.findOne({ where: { email: userData.email } });
         if (isUser) {
             throw new Error('User already registered');
         }
-       
+
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(userData.password, salt);
-       
+
         const newUser = await User.create({
             firstName: userData.firstName,
             lastName: userData.lastName,
@@ -45,9 +45,24 @@ const userService = {
             ...tokens
         };
     },
-    logout: async (refreshToken) => {
+    logoutUser: async (refreshToken) => {
         return await tokenService.removeToken(refreshToken);
-    }
+    },
+    refresh: async (refreshToken) => {
+        if (!refreshToken) {
+            throw Error({ statusCode: 401, message: "UNAUTHORIZED" })
+        }
+        const verifyToken = tokenService.validateRefreshToken(refreshToken);
+        const tokenDb = await tokenService.getTokenById(refreshToken);
+        if (!verifyToken || !tokenDb)
+            throw Error({ statusCode: 401, message: "UNAUTHORIZED" })
+        const tokens = tokenService.generateToken({ id: verifyToken.id });
+        await tokenService.saveToken(verifyToken.id, tokens.refreshToken);
+        return {
+            user:verifyToken.id,
+            ...tokens
+        };
+    },
 };
 
 export default userService;
