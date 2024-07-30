@@ -62,7 +62,7 @@ export const refresh = async (req, res, next) => {
 
 export const getAll = async (req, res, next) => {
     try {
-        const users = await User.findAll();
+        const users = await userService.getAll();
         res.json(users);
     } catch (error) {
         next(error);

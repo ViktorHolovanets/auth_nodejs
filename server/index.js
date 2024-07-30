@@ -16,7 +16,7 @@ sequelize.sync()
 app.use(express.json())
 app.use(cookieParser())
 
-app.use("/", routes)
+app.use("/auth", routes)
 app.use(errorMiddleware);
 
 

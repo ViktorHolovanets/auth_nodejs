@@ -59,10 +59,13 @@ const userService = {
         const tokens = tokenService.generateToken({ id: verifyToken.id });
         await tokenService.saveToken(verifyToken.id, tokens.refreshToken);
         return {
-            user:verifyToken.id,
+            user: verifyToken.id,
             ...tokens
         };
     },
+    getAll: async () => {
+        return await User.findAll();
+    }
 };
 
 export default userService;
